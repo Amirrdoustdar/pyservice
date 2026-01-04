@@ -1,27 +1,121 @@
-name: CI
+name: CI Quality Gate
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
     branches: [main]
 
+env:
+  PYTHON_VERSION: '3.11'
+  COVERAGE_THRESHOLD: 80
+
 jobs:
-  test:
+  # ==========================================
+  # Stage 1: Lint
+  # ==========================================
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install linters
+        run: pip install ruff black
+      
+      - name: Ruff (errors = fail)
+        run: ruff check src/ --output-format=github
+      
+      - name: Black (check formatting)
+        run: black --check src/
+
+  # ==========================================
+  # Stage 2: Test
+  # ==========================================
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: lint
     
     steps:
       - uses: actions/checkout@v4
       
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
       
       - name: Install dependencies
         run: pip install -r requirements/testing.txt
       
       - name: Run tests
+        working-directory: src
+        env:
+          DJANGO_ENV: testing
         run: |
-          cd src
-          python -m pytest . ../tests --cov=apps --cov=services -v
+          python -m pytest . ../tests \
+            --cov=apps \
+            --cov=services \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            -v
+      
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: src/coverage.xml
+
+  # ==========================================
+  # Stage 3: Coverage Gate
+  # ==========================================
+  coverage:
+    name: Coverage Gate
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: .
+      
+      - name: Check coverage threshold
+        run: |
+          pip install coverage
+          COVERAGE=$(python -c "
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('coverage.xml')
+          root = tree.getroot()
+          print(int(float(root.attrib['line-rate']) * 100))
+          ")
+          echo "Coverage: ${COVERAGE}%"
+          if [ "$COVERAGE" -lt "${{ env.COVERAGE_THRESHOLD }}" ]; then
+            echo "Coverage ${COVERAGE}% is below threshold ${{ env.COVERAGE_THRESHOLD }}%"
+            exit 1
+          fi
+          echo "Coverage ${COVERAGE}% meets threshold"
+
+  # ==========================================
+  # Stage 4: Build
+  # ==========================================
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint, test, coverage]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build Docker image
+        run: docker build -t pyservice:${{ github.sha }} .
+      
+      - name: Test Docker image
+        run: |
+          docker run --rm pyservice:${{ github.sha }} python -c "import django; print('Django OK')"

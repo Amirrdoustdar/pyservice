@@ -1,0 +1,23 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  become: yes
+
+- name: Install base packages
+  apt:
+    name:
+      - python3
+      - python3-pip
+      - python3-venv
+      - git
+      - curl
+      - htop
+    state: present
+  become: yes
+
+- name: Set timezone
+  timezone:
+    name: "{{ timezone | default('UTC') }}"
+  become: yes

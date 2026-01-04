@@ -1,0 +1,38 @@
+name: CD Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - prod
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'staging' }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install Ansible
+        run: pip install ansible
+      
+      - name: Run Ansible
+        run: |
+          echo "Deploying to ${{ github.event.inputs.environment || 'staging' }}"
+          # cd ansible
+          # ansible-playbook -i inventory/${{ github.event.inputs.environment || 'staging' }}.ini playbooks/deploy.yml

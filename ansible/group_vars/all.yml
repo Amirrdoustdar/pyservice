@@ -1,1 +1,14 @@
+---
+# Global settings
 app_name: pyservice
+app_user: pyservice
+app_dir: /opt/pyservice
+repo_url: "git@github.com:Amirrdoustdar/pyservice.git"
+timezone: UTC
+
+# Gunicorn settings
+gunicorn_port: 8000
+gunicorn_workers: 2
+
+# Database defaults
+db_port: 5432

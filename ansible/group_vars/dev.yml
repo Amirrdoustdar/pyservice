@@ -1,0 +1,9 @@
+---
+django_debug: "True"
+django_allowed_hosts: "localhost,127.0.0.1"
+django_secret_key: "dev-secret-key-not-for-production"
+
+db_name: pyservice_dev
+db_user: postgres
+db_password: postgres
+db_host: localhost

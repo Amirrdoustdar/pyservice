@@ -1,0 +1,9 @@
+---
+# Initial server setup
+# Run once: ansible-playbook -i inventory/staging.ini playbooks/setup.yml
+
+- name: Setup Server
+  hosts: all
+  
+  roles:
+    - common

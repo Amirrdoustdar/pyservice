@@ -1,9 +1,26 @@
 ---
-- name: Deploy
+# Deploy application
+# Run: ansible-playbook -i inventory/staging.ini playbooks/deploy.yml
+
+- name: Deploy Application
   hosts: all
-  become: yes
-  tasks:
-    - name: Pull
-      git:
-        repo: "{{ repo_url }}"
-        dest: "{{ app_dir }}"
+  
+  pre_tasks:
+    - name: Verify connectivity
+      ping:
+  
+  roles:
+    - app
+  
+  post_tasks:
+    - name: Health check
+      uri:
+        url: "http://localhost:{{ gunicorn_port }}/api/v1/health/"
+        status_code: 200
+      retries: 5
+      delay: 3
+      register: health
+    
+    - name: Show health status
+      debug:
+        msg: "Deploy successful! Status: {{ health.json.status }}"

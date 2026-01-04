@@ -1,0 +1,11 @@
+---
+django_debug: "False"
+django_allowed_hosts: "example.com,www.example.com"
+# django_secret_key: load from vault
+
+db_name: pyservice
+db_user: pyservice
+# db_password: load from vault
+db_host: localhost
+
+gunicorn_workers: 4

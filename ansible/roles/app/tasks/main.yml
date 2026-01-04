@@ -1,0 +1,70 @@
+---
+- name: Create app user
+  user:
+    name: "{{ app_user }}"
+    shell: /bin/bash
+    home: "{{ app_dir }}"
+    system: yes
+  become: yes
+
+- name: Create app directory
+  file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: '0755'
+  become: yes
+
+- name: Clone or update repository
+  git:
+    repo: "{{ repo_url }}"
+    dest: "{{ app_dir }}/current"
+    version: "{{ git_branch | default('main') }}"
+    force: yes
+  become: yes
+  become_user: "{{ app_user }}"
+  notify: restart app
+
+- name: Create virtualenv and install dependencies
+  pip:
+    requirements: "{{ app_dir }}/current/requirements/production.txt"
+    virtualenv: "{{ app_dir }}/venv"
+    virtualenv_python: python3
+  become: yes
+  become_user: "{{ app_user }}"
+
+- name: Create .env file
+  template:
+    src: env.j2
+    dest: "{{ app_dir }}/current/.env"
+    owner: "{{ app_user }}"
+    mode: '0600'
+  become: yes
+  notify: restart app
+
+- name: Run database migrations
+  shell: |
+    source {{ app_dir }}/venv/bin/activate
+    cd {{ app_dir }}/current
+    python manage.py migrate --noinput
+  become: yes
+  become_user: "{{ app_user }}"
+  args:
+    executable: /bin/bash
+
+- name: Deploy systemd service
+  template:
+    src: app.service.j2
+    dest: /etc/systemd/system/{{ app_name }}.service
+  become: yes
+  notify:
+    - reload systemd
+    - restart app
+
+- name: Enable and start app service
+  systemd:
+    name: "{{ app_name }}"
+    enabled: yes
+    state: started
+  become: yes

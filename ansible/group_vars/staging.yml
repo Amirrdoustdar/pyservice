@@ -1,0 +1,9 @@
+---
+django_debug: "False"
+django_allowed_hosts: "staging.example.com"
+# django_secret_key: load from vault
+
+db_name: pyservice_staging
+db_user: pyservice
+# db_password: load from vault
+db_host: localhost
