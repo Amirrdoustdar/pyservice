@@ -1,0 +1,9 @@
+---
+- name: Deploy
+  hosts: all
+  become: yes
+  tasks:
+    - name: Pull
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"

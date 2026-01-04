@@ -1,0 +1,10 @@
+[Unit]
+Description=Gunicorn
+After=network.target
+
+[Service]
+ExecStart={{ venv }}/bin/gunicorn config.wsgi:application --bind 0.0.0.0:8000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
