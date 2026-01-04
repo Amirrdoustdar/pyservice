@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from django.db import connection
 from services import BaseService, ServiceResult
 
+
 @dataclass
 class Health:
     status: str
@@ -10,6 +11,7 @@ class Health:
 
     def to_dict(self):
         return {'status': self.status, 'uptime_seconds': round(self.uptime, 2)}
+
 
 class HealthService(BaseService):
     _start = time.time()
@@ -19,8 +21,9 @@ class HealthService(BaseService):
             with connection.cursor() as c:
                 c.execute("SELECT 1")
             status = "healthy"
-        except:
+        except Exception:
             status = "unhealthy"
         return ServiceResult(success=True, data=Health(status, time.time() - self._start))
+
 
 health_service = HealthService()

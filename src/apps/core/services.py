@@ -1,1 +1,1 @@
-from services import CRUDService
+# Services for core app

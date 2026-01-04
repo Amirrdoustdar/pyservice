@@ -1,6 +1,6 @@
 import pytest
 from django.contrib.auth.models import User
-from services import ServiceResult, BaseService, CRUDService
+from services import ServiceResult, CRUDService
 
 
 class TestServiceResult:
