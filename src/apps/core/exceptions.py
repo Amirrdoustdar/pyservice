@@ -1,8 +1,9 @@
 from rest_framework.views import exception_handler
 
+
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
     if response is not None:
-        msg = str(exc.detail) if hasattr(exc, 'detail') else str(exc)
-        response.data = {'error': {'message': msg}}
+        msg = str(exc.detail) if hasattr(exc, "detail") else str(exc)
+        response.data = {"error": {"message": msg}}
     return response

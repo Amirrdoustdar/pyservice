@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from typing import TypeVar, Generic, Optional
 from django.db import transaction
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 @dataclass
 class ServiceResult(Generic[T]):
@@ -13,8 +14,10 @@ class ServiceResult(Generic[T]):
     def __bool__(self):
         return self.success
 
+
 class BaseService:
     pass
+
 
 class CRUDService(BaseService, Generic[T]):
     model_class = None

@@ -10,7 +10,7 @@ class Health:
     uptime: float
 
     def to_dict(self):
-        return {'status': self.status, 'uptime_seconds': round(self.uptime, 2)}
+        return {"status": self.status, "uptime_seconds": round(self.uptime, 2)}
 
 
 class HealthService(BaseService):
@@ -23,7 +23,9 @@ class HealthService(BaseService):
             status = "healthy"
         except Exception:
             status = "unhealthy"
-        return ServiceResult(success=True, data=Health(status, time.time() - self._start))
+        return ServiceResult(
+            success=True, data=Health(status, time.time() - self._start)
+        )
 
 
 health_service = HealthService()

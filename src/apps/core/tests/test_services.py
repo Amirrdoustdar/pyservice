@@ -25,37 +25,37 @@ class UserService(CRUDService):
 class TestCRUDService:
     def test_create(self):
         service = UserService()
-        result = service.create({'username': 'test', 'password': 'pass123'})
+        result = service.create({"username": "test", "password": "pass123"})
         assert result.success
-        assert result.data.username == 'test'
+        assert result.data.username == "test"
 
     def test_get_by_id(self):
-        user = User.objects.create(username='findme')
+        user = User.objects.create(username="findme")
         service = UserService()
         result = service.get_by_id(user.id)
         assert result.success
-        assert result.data.username == 'findme'
+        assert result.data.username == "findme"
 
     def test_get_by_id_not_found(self):
         service = UserService()
         result = service.get_by_id(9999)
         assert not result.success
-        assert 'Not found' in result.error
+        assert "Not found" in result.error
 
     def test_update(self):
-        user = User.objects.create(username='old')
+        user = User.objects.create(username="old")
         service = UserService()
-        result = service.update(user.id, {'username': 'new'})
+        result = service.update(user.id, {"username": "new"})
         assert result.success
-        assert result.data.username == 'new'
+        assert result.data.username == "new"
 
     def test_update_not_found(self):
         service = UserService()
-        result = service.update(9999, {'username': 'x'})
+        result = service.update(9999, {"username": "x"})
         assert not result.success
 
     def test_delete(self):
-        user = User.objects.create(username='delete_me')
+        user = User.objects.create(username="delete_me")
         service = UserService()
         result = service.delete(user.id)
         assert result.success
