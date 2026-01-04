@@ -1,4 +1,5 @@
-from .base import *
+from .base import *  # noqa: F403
+from .base import BASE_DIR  # noqa: F401
 
 DEBUG = True
 ALLOWED_HOSTS = ['*']
